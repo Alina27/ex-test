@@ -1,56 +1,31 @@
-import java.io._
-
-import org.apache.poi.ss.util._
-import org.apache.poi.xssf.usermodel._
+import com.norbitltd.spoiwo.model.{Row, Sheet}
+import com.norbitltd.spoiwo.model._
+import com.norbitltd.spoiwo.model.enums._
+import com.norbitltd.spoiwo.natures.xlsx.Model2XlsxConversions.XlsxSheet
+import java.time.LocalDate
 
 object Hello extends App {
- // println("Hello, World!")
 
-  val columnHeaders = List(
-    "Дата перерахунку коштів",
-    "Сума принятих коштів",
-    "Сума утриманої винагороди",
-    "Сума перерахованих коштів",
-    "Сервіс",
-    "ПІБ Покупця",
-    "№ ЕН НП",
-    "Номер замовлення"
-  )
-
-  val data = Map(
-    (10,"1")   -> List("07.07.2021", "1739.00", "",  "1739.00", "Безготівковий 6",	"Крупко Зоя Олеговна",	"20400236713873",	"РОЗ121293402"),
-    (11,"2")   -> List("07.07.2021", "1239.00", "",  "1239.00", "Безготівковий 6",	"Перфілова Наталя Сергіївна",	"20400236713873",	"РОЗ121293402"),
-    (12,"3")   -> List("07.07.2021", "1439.00", "",  "1539.00", "Безготівковий 6",	"Крупко Зоя Олеговна",	"20400236713873",	"РОЗ121293402"),
-    (13,"4")   -> List("07.07.2021", "1439.00", "",  "1539.00", "Безготівковий 6",	"Кокош Генріетта Іванівна",	"20400236713873",	"РОЗ121293402")
-  )
+  val titleRow = Row(index = 0).withCellValues("РЕЄСТР ПЕРЕКАЗІВ")
+  val secondRow = Row(index = 2).withCellValues("Одержувач:", "Товариство з обмеженою відповідальністю '???'")
+  val thirdRow = Row(index = 4).withCellValues("П//р в банку:", "UA08798723920jjhsd00909809")
+  val fourthRow = Row(index = 6).withCellValues("Дата:", LocalDate.of(1867, 11, 7))
 
 
-  // Open template
-  val wb = new XSSFWorkbook(
-    getClass.getResourceAsStream("template6.xlsx")
-  )
-  val sheet = wb.getSheetAt(0)
+  val reportSheet: Sheet = Sheet(name = "Test sheet")
+    .withRows(
+      titleRow,
+      secondRow,
+      thirdRow,
+      fourthRow,
+      Row(index = 8).withCellValues("№", "Дата перерахунку коштів", "Сума принятих коштів", "Сума утриманої винагороди", "Сума перерахованих коштів", "Сервіс", "ПІБ Покупця", "№ ЕН НП", "Номер замовлення"),
+      Row(index = 9).withCellValues(1, LocalDate.of(1867, 11, 7), BigDecimal(1739), BigDecimal(0), BigDecimal(1739), "Безготівковий 6", "ПІБ", "12345678987654", "РОЗ012345678"),
+      Row(index = 10).withCellValues(2, LocalDate.of(2020, 7, 7), BigDecimal(1339), BigDecimal(0), BigDecimal(1339), "Безготівковий 6", "Ініціали", "12345678987654", "РОЗ012345678"),
+    )
+    .withColumns(
+      Column(index = 0, autoSized = true)
+    )
 
-  // Fill headers
-  val headerRow = sheet.getRow(8)
-    for(idx <- 1 to columnHeaders.length) {
-      headerRow.getCell(idx).setCellValue(columnHeaders(idx - 1))
-    }
-
-
-  // Fill body
-  for(key @ (rowNumber, rowName) <- data.keys) {
-    val row = sheet.getRow(rowNumber)
-    row.getCell(0).setCellValue(rowName)
-
-    for(idx <- 1 to data(key).length) {
-      row.getCell(idx).setCellValue(data(key)(idx - 1))
-    }
-  }
-
-  // Save report
-  val resultFile = new FileOutputStream("report.xlsx")
-  wb.write(resultFile)
-  resultFile.close()
+  reportSheet.saveAsXlsx("report.xlsx")
 
 }
